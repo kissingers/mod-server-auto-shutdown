@@ -86,12 +86,12 @@ void ServerAutoShutdown::Init()
 
     // Check convert to int
     auto CheckTime = [tokens](std::initializer_list<uint8> index)
-        {
-            for (auto const& itr : index)
-                if (!Acore::StringTo<uint8>(tokens.at(itr)))
-                    return false;
-            return true;
-        };
+    {
+        for (auto const& itr : index)
+            if (!Acore::StringTo<uint8>(tokens.at(itr)))
+                return false;
+        return true;
+    };
 
     if (!CheckTime({ 0, 1, 2 }))
     {
@@ -167,15 +167,13 @@ void ServerAutoShutdown::Init()
 
     // Add task for pre shutdown announce
     scheduler.Schedule(Seconds(diffToPreAnnounce), [preAnnounceSeconds](TaskContext /*context*/)
-        {
-            std::string preAnnounceMessageFormat = sConfigMgr->GetOption<std::string>("ServerAutoShutdown.PreAnnounce.Message", "[SERVER]: Automated (quick) server restart in {}");
-            std::string message = Acore::StringFormat(preAnnounceMessageFormat, Acore::Time::ToTimeString<Seconds>(preAnnounceSeconds, TimeOutput::Seconds, TimeFormat::FullText));
-
-            LOG_INFO("module", "> {}", message);
-
-            sWorldSessionMgr->SendServerMessage(SERVER_MSG_STRING, message);
-            sWorld->ShutdownServ(preAnnounceSeconds, SHUTDOWN_MASK_RESTART, SHUTDOWN_EXIT_CODE);
-        });
+    {
+        std::string preAnnounceMessageFormat = sConfigMgr->GetOption<std::string>("ServerAutoShutdown.PreAnnounce.Message", "[SERVER]: Automated (quick) server restart in {}");
+        std::string message = Acore::StringFormat(preAnnounceMessageFormat, Acore::Time::ToTimeString<Seconds>(preAnnounceSeconds, TimeOutput::Seconds, TimeFormat::FullText));
+        LOG_INFO("module", "> {}", message);
+        sWorldSessionMgr->SendServerMessage(SERVER_MSG_STRING, message);
+        sWorld->ShutdownServ(preAnnounceSeconds, SHUTDOWN_MASK_RESTART, SHUTDOWN_EXIT_CODE);
+    });
 }
 
 void ServerAutoShutdown::OnUpdate(uint32 diff)
